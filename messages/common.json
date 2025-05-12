@@ -1,0 +1,10 @@
+{
+    "forward_prompt": "⚠️ Please forward a message from a channel.",
+    "action_cancelled": "❌ Action cancelled.",
+    "not_implemented": "🔧 Not implemented yet!",
+    "no_message_found": "No forwarded message found. Please forward a message again.",
+    "confirm_prompt": "Do you want to save this record to database?",
+    "save_success": "✅ Successfully saved to database!",
+    "save_cancelled": "❌ Save cancelled."
+  }
+  
