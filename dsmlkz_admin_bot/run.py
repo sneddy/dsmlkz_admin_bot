@@ -1,22 +1,8 @@
-# from aiogram import Bot, Dispatcher
-# from aiogram.utils import executor
-# from configs.config import BOT_TOKEN
-# from dsmlkz_admin_bot.communication.message_handlers import register_message_handlers
-
-# bot = Bot(token=BOT_TOKEN)
-# dp = Dispatcher(bot)
-
-# register_message_handlers(dp, bot)
-
-# if __name__ == "__main__":
-#     print("🚀 Bot is running...")
-#     executor.start_polling(dp, skip_updates=True)
 import os
 import logging
 from fastapi import FastAPI, Request
 from aiogram import Bot, Dispatcher, types
-from aiogram.dispatcher.webhook import get_webhook_request_handler
-from aiogram.utils.executor import start_polling
+from aiogram.utils.executor import start_polling  # ✅ оставляем, нужен для dev
 from dsmlkz_admin_bot.communication.message_handlers import register_message_handlers
 from configs.config import BOT_TOKEN
 
