@@ -3,7 +3,6 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from aiogram import Bot, Dispatcher, types
-from aiogram.utils.executor import start_polling
 from dsmlkz_admin_bot.communication.message_handlers import register_message_handlers
 from configs.config import BOT_TOKEN
 
@@ -12,6 +11,7 @@ WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # e.g. https://yourapp.up.railway.app/we
 
 # Bot and Dispatcher
 bot = Bot(token=BOT_TOKEN)
+Bot.set_current(bot)
 dp = Dispatcher(bot)
 register_message_handlers(dp, bot)
 
