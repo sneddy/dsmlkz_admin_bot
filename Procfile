@@ -1,1 +1,1 @@
-web: python run.py
+web: python dsmlkz_admin_bot/run.py
