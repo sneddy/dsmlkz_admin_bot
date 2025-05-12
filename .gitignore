@@ -5,3 +5,4 @@ tmp
 *.pyc
 .DS_Store
 *.log
+.env
