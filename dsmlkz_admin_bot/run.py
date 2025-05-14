@@ -3,8 +3,10 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from aiogram import Bot, Dispatcher, types
+from aiogram.types import BotCommand
 from dsmlkz_admin_bot.communication.message_handlers import register_message_handlers
 from configs.config import BOT_TOKEN
+
 
 # ENV VARS
 WEBHOOK_PATH = "/webhook"
@@ -19,11 +21,20 @@ dp = Dispatcher(bot)
 register_message_handlers(dp, bot)
 
 
+async def setup_bot_commands(bot: Bot):
+    commands = [
+        BotCommand(command="new_jd", description="Создать вакансию по тексту"),
+        # Добавь здесь другие команды, если они есть
+    ]
+    await bot.set_my_commands(commands)
+
+
 # Lifespan handler
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print(f"🚀 Setting webhook: {WEBHOOK_URL}")
     await bot.set_webhook(WEBHOOK_URL)
+    await setup_bot_commands(bot)
     yield
     print("🧹 Removing webhook")
     await bot.delete_webhook()
