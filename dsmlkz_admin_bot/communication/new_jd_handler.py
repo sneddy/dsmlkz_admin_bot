@@ -1,27 +1,22 @@
-# handlers/new_vacancy_handler.py
-from aiogram import types, Router, F
+from aiogram import types, Dispatcher
 from dsmlkz_admin_bot.services.hr_assistant_service import ChatGptHrAssistant
 import os
 
-router = Router()
 assistant = ChatGptHrAssistant(api_key=os.getenv("OPENAI_API_KEY"))
-
 user_states = {}
 
 
-@router.message(F.text == "/new_vacancy")
-async def start_new_vacancy(message: types.Message):
+async def start_new_jd(message: types.Message):
     user_states[message.from_user.id] = "awaiting_jd"
     await message.reply("Пожалуйста, пришлите описание вакансии свободным текстом.")
 
 
-@router.message()
-async def handle_job_description(message: types.Message):
+async def handle_jd(message: types.Message):
     if user_states.get(message.from_user.id) != "awaiting_jd":
         return
 
-    jd_text = message.text
     await message.reply("Генерирую вакансию...")
+    jd_text = message.text
 
     try:
         markdown_output = assistant(jd_text)
@@ -30,3 +25,8 @@ async def handle_job_description(message: types.Message):
         await message.reply(f"Произошла ошибка при генерации: {e}")
     finally:
         user_states.pop(message.from_user.id, None)
+
+
+def register_new_jd(dp: Dispatcher):
+    dp.register_message_handler(start_new_jd, commands=["new_vacancy"])
+    dp.register_message_handler(handle_jd, content_types=types.ContentTypes.TEXT)

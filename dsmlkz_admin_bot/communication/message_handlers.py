@@ -1,7 +1,7 @@
 from aiogram import Bot, Dispatcher, types
 from dsmlkz_admin_bot.communication.message_processor import MessageProcessor
 from dsmlkz_admin_bot.keyboards import get_action_keyboard, get_confirmation_keyboard
-from dsmlkz_admin_bot.communication.new_jd_handler import router as new_jd_router
+from dsmlkz_admin_bot.communication.new_jd_handler import register_new_jd
 
 # Temporary in-memory storage
 user_message_storage = {}
@@ -20,7 +20,7 @@ async def clean_up_messages(bot: Bot, user_id: int, message_ids: list):
 
 def register_message_handlers(dp: Dispatcher, bot: Bot):
     # Temporary media group tracking
-    dp.include_router(new_jd_router)
+    register_new_jd(dp)
     media_group_cache = {}
 
     @dp.message_handler(content_types=[types.ContentType.TEXT, types.ContentType.PHOTO])
