@@ -1,13 +1,11 @@
 import asyncio
-from aiogram import Bot
-from configs.config import BOT_TOKEN
-from configs.prev_messages import (
-    it_jobs_messages,
-    news_messages,
-    aimoldin_jobs_messages,
-)
-from dsmlkz_admin_bot.communication.message_processor import MessageProcessor
 
+from aiogram import Bot
+
+from configs.config import BOT_TOKEN
+from configs.prev_messages import (aimoldin_jobs_messages, it_jobs_messages,
+                                   news_messages)
+from dsmlkz_admin_bot.communication.message_processor import MessageProcessor
 
 messages_to_process = {
     # "news": [(-1001055767503, post_id) for post_id in news_messages],

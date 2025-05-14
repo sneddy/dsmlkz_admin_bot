@@ -1,12 +1,14 @@
-import os
 import logging
+import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import BotCommand
-from dsmlkz_admin_bot.communication.message_handlers import register_message_handlers
-from configs.config import BOT_TOKEN
+from fastapi import FastAPI, Request
 
+from configs.config import BOT_TOKEN
+from dsmlkz_admin_bot.communication.message_handlers import \
+    register_message_handlers
 
 # ENV VARS
 WEBHOOK_PATH = "/webhook"

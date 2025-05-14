@@ -1,7 +1,9 @@
-from aiogram.types import Message
 from abc import ABC
-from dsmlkz_admin_bot.utils.entities_parser import EntitiesParser
+
+from aiogram.types import Message
+
 from dsmlkz_admin_bot.parsing.parsed_message import ParsedMessage
+from dsmlkz_admin_bot.utils.entities_parser import EntitiesParser
 
 
 class BaseParsing(ABC):

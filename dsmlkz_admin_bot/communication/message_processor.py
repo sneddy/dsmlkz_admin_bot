@@ -1,11 +1,11 @@
-from aiogram import Bot, types
-
-from dsmlkz_admin_bot.parsing import ParsedMessage, JobsParsing, BaseParsing
-from supabase import create_client
-import aiohttp
 import uuid
 
-from configs.config import SUPABASE_URL, SUPABASE_KEY, SUPABASE_BUCKET
+import aiohttp
+from aiogram import Bot, types
+from supabase import create_client
+
+from configs.config import SUPABASE_BUCKET, SUPABASE_KEY, SUPABASE_URL
+from dsmlkz_admin_bot.parsing import BaseParsing, JobsParsing, ParsedMessage
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 

@@ -1,7 +1,9 @@
 from aiogram import Bot, Dispatcher, types
+
 from dsmlkz_admin_bot.communication.message_processor import MessageProcessor
-from dsmlkz_admin_bot.keyboards import get_action_keyboard, get_confirmation_keyboard
 from dsmlkz_admin_bot.communication.new_jd_handler import register_new_jd
+from dsmlkz_admin_bot.keyboards import (get_action_keyboard,
+                                        get_confirmation_keyboard)
 
 # Temporary in-memory storage
 user_message_storage = {}

@@ -1,14 +1,16 @@
-import os
 import json
-import requests
-from uuid import uuid4
-from urllib.parse import urlparse
-from pathlib import Path
-from supabase import create_client
-import supabase
-from configs.config import SUPABASE_URL, SUPABASE_KEY, FACES_BUCKET, USER_ID
-import ipdb
 import mimetypes
+import os
+from pathlib import Path
+from urllib.parse import urlparse
+from uuid import uuid4
+
+import ipdb
+import requests
+import supabase
+from supabase import create_client
+
+from configs.config import FACES_BUCKET, SUPABASE_KEY, SUPABASE_URL, USER_ID
 
 
 def download_image(url, save_path):

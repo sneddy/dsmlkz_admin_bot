@@ -1,6 +1,7 @@
-from aiogram.types import MessageEntity
-from html import escape
 from collections import defaultdict
+from html import escape
+
+from aiogram.types import MessageEntity
 
 
 class EntitiesParser:

@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import Dict, List
 
 from PIL import Image, ImageDraw, ImageFont
+
 from dsmlkz_admin_bot.services.hr_assistant_service import ChatGptHrAssistant
 
 
