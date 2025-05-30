@@ -63,10 +63,10 @@ async def handle_jd(message: types.Message):
 
     try:
         meta_info = assistant.text2dict(message.text)
-        meta_info = assistant.replace_markdown_symbols(meta_info)
 
         drawer.reset()
         img = drawer.draw(meta_info)
+        meta_info = assistant.replace_markdown_symbols(meta_info)
 
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
             temp_img_path = tmp.name
