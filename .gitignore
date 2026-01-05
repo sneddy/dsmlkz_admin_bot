@@ -6,3 +6,6 @@ tmp
 .DS_Store
 *.log
 .env
+.csv
+dsmlkz_parsing/
+notebooks/

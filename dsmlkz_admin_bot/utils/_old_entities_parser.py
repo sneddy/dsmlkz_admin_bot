@@ -1,116 +1,112 @@
-import html
-from dataclasses import dataclass
+from functools import cached_property
 from typing import List
+import html
 
 
-@dataclass
 class MessageEntity:
-    type: str
-    offset: int
-    length: int
-    url: str = None
+    def __init__(self, type: str, offset: int, length: int, url: str = None):
+        self.type = type
+        self.offset = offset
+        self.length = length
+        self.url = url
 
 
 class EntitiesParser:
     def __init__(self, raw_text: str, entities: List[MessageEntity]):
         self.raw_text = raw_text
-        self.entities = entities
-        self._html = None
-        self._tg_preview = None
-        self._entity_debug = None
+        self.entities = sorted(entities or [], key=lambda e: (e.offset, -e.length))
+        self.offset_map = self._build_utf16_to_py_index_map(raw_text)
 
-    @property
+    def _build_utf16_to_py_index_map(self, s: str) -> dict[int, int]:
+        """
+        Build a mapping from UTF-16 code unit offsets (Telegram uses) to Python string indices.
+        """
+        mapping = {}
+        utf16_index = 0
+        for i, char in enumerate(s):
+            mapping[utf16_index] = i
+            utf16_index += 2 if ord(char) > 0xFFFF else 1
+        return mapping
+
+    def _convert_offset(self, utf16_offset: int) -> int:
+        """
+        Convert Telegram UTF-16 offset to Python str index.
+        If offset is beyond the known map, returns len(self.raw_text).
+        """
+        return self.offset_map.get(utf16_offset, len(self.raw_text))
+
+    @cached_property
     def html(self) -> str:
-        if self._html is None:
-            self._html = self._build_html()
-        return self._html
+        if not self.entities:
+            return html.escape(self.raw_text)
 
-    @property
-    def tg_preview(self) -> str:
-        if self._tg_preview is None:
-            self._tg_preview = f"<pre>{html.escape(self.html)}</pre>"
-        return self._tg_preview
+        events = []
 
-    @property
-    def entity_debug(self) -> str:
-        if self._entity_debug is None:
-            lines = [
-                f"type={e.type}, offset={e.offset}, length={e.length}"
-                + (f", url={e.url}" if e.url else "")
-                for e in self.entities
-            ]
-            self._entity_debug = "\n".join(lines)
-        return self._entity_debug
+        for entity in self.entities:
+            start = self._convert_offset(entity.offset)
+            end = self._convert_offset(entity.offset + entity.length)
+            events.append((start, "open", entity))
+            events.append((end, "close", entity))
 
-    def _build_html(self) -> str:
-        # Telegram offset/length are in UTF-16 code units, need to convert to Python string indices
-        utf16_to_py = self._utf16_to_python_indices(self.raw_text)
+        events.sort(key=lambda e: (e[0], 0 if e[1] == "open" else 1))
 
-        # Annotate open/close tags
-        opens = {}
-        closes = {}
-
-        for e in self.entities:
-            start = utf16_to_py.get(e.offset)
-            end = utf16_to_py.get(e.offset + e.length)
-            if start is None or end is None:
-                continue
-
-            tag = self._html_tag(e)
-            if not tag:
-                continue
-
-            opens.setdefault(start, []).append((tag, e))
-            closes.setdefault(end, []).append((tag, e))
-
-        # Build final HTML
         result = []
-        open_stack = []
+        current_pos = 0
+        open_tags_stack = []
 
-        for i, ch in enumerate(self.raw_text):
-            if i in closes:
-                for tag, _ in reversed(closes[i]):
-                    while open_stack:
-                        last_tag, _ = open_stack.pop()
-                        result.append(f"</{last_tag}>")
-                        if last_tag == tag:
-                            break
+        for pos, event_type, entity in events:
+            if current_pos < pos:
+                result.append(html.escape(self.raw_text[current_pos:pos]))
+                current_pos = pos
 
-            if i in opens:
-                for tag, ent in opens[i]:
-                    if tag == "a":
-                        result.append(f'<a href="{html.escape(ent.url)}">')
-                    else:
-                        result.append(f"<{tag}>")
-                    open_stack.append((tag, ent))
+            if event_type == "open":
+                tag = self._get_open_tag(entity)
+                result.append(tag)
+                open_tags_stack.append((entity, tag))
+            else:  # close
+                for i in reversed(range(len(open_tags_stack))):
+                    open_entity, open_tag = open_tags_stack[i]
+                    if open_entity is entity:
+                        close_tag = self._get_close_tag(open_tag)
+                        result.append(close_tag)
+                        open_tags_stack.pop(i)
+                        break
 
-            result.append(html.escape(ch))
+        result.append(html.escape(self.raw_text[current_pos:]))
 
-        # Close any remaining tags
-        while open_stack:
-            tag, _ = open_stack.pop()
-            result.append(f"</{tag}>")
+        while open_tags_stack:
+            _, open_tag = open_tags_stack.pop()
+            result.append(self._get_close_tag(open_tag))
 
         return "".join(result)
 
-    def _html_tag(self, entity: MessageEntity) -> str:
-        return {
-            "bold": "b",
-            "italic": "i",
-            "underline": "u",
-            "strikethrough": "s",
-            "code": "code",
-            "pre": "pre",
-            "text_link": "a",
-            "url": "a",
-        }.get(entity.type)
+    @cached_property
+    def tg_preview(self) -> str:
+        entities_str = "\n".join(
+            f"type={e.type}, offset={e.offset}, length={e.length}"
+            + (f", url={e.url}" if e.url else "")
+            for e in self.entities
+        )
+        return f"<pre>{html.escape(entities_str)}\n\n{self.html}</pre>"
 
-    def _utf16_to_python_indices(self, text: str) -> dict:
-        """Convert UTF-16 code unit indices to Python string indices."""
-        mapping = {}
-        utf16_len = 0
-        for i, ch in enumerate(text):
-            mapping[utf16_len] = i
-            utf16_len += 2 if ord(ch) > 0xFFFF else 1
-        mapping[utf16_len] = len(text)  # End of string
-        return mapping
+    def _get_open_tag(self, entity: MessageEntity) -> str:
+        if entity.type == "bold":
+            return "<b>"
+        if entity.type == "italic":
+            return "<i>"
+        if entity.type == "underline":
+            return "<u>"
+        if entity.type == "strikethrough":
+            return "<s>"
+        if entity.type == "code":
+            return "<code>"
+        if entity.type == "pre":
+            return "<pre>"
+        if entity.type == "text_link" and entity.url:
+            return f'<a href="{html.escape(entity.url)}">'
+        return ""
+
+    def _get_close_tag(self, open_tag: str) -> str:
+        if open_tag.startswith("<a "):
+            return "</a>"
+        return open_tag.replace("<", "</")

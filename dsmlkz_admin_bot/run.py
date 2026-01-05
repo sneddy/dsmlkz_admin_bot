@@ -7,7 +7,8 @@ from aiogram.types import BotCommand
 from fastapi import FastAPI, Request
 
 from configs.config import BOT_TOKEN
-from dsmlkz_admin_bot.communication.message_handlers import register_message_handlers
+from dsmlkz_admin_bot.communication.message_handlers import \
+    register_message_handlers
 
 # ENV VARS
 WEBHOOK_PATH = "/webhook"
@@ -38,8 +39,7 @@ async def lifespan(app: FastAPI):
     yield
     await bot.delete_webhook()
     print("🧹 Removing webhook")
-    await bot.session.close()
-
+    await bot.session.close() 
 
 # FastAPI app
 app = FastAPI(lifespan=lifespan)

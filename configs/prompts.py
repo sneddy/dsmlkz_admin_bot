@@ -1,4 +1,5 @@
-jd2dict_prompt = """You are the admin of a Telegram channel that posts IT job opportunities for english speakers:
+# legacy prompt
+jd2dict_prompt_legacy = """You are the admin of a Telegram channel that posts IT job opportunities for english speakers:
 
 Your client will send you job description
 Your task - make structural summary in English keeping most important for applicants information with less 1200 characters
@@ -33,6 +34,41 @@ Be careful with {} - it should be valid for ast.literal_eval
 
 The final output should be in English
 """
+
+# new prompt
+jd2dict_prompt = """Task: Convert the user's job description into a concise structured summary for an English IT jobs Telegram channel.
+
+Return ONLY a valid Python dict literal (no Markdown, no code fences, no extra text). It must be parseable by ast.literal_eval.
+
+Schema (no extra keys):
+{
+  "company_name": str|None,
+  "position_name": str|None,
+  "location": {"city": str|None, "remote": bool|None, "in_kazakhstan": bool|None, "support_relocation": bool|None},
+  "salary_range": {
+    "low_limit": float|None, 
+    "high_limit": float|None, 
+    "currency": "usd"|"rub"|"kzt"|"euro"|None, 
+    "after_taxes": bool|None, 
+    "period": "month"|"year"|"hour"|"project"|None},
+  "contacts": {"telegram": str|None, "email": str|None},
+  "description": {"project_details": str|None, "company_details": str|None},
+  "requirements": {"optional_skills": list[str], "required_skills": list[str], "responsibilities": list[str]}
+}
+
+Rules:
+- Output must be in English.
+- Keep the whole output under 1200 characters by making strings short.
+- Remove marketing/fluff; keep only applicant-relevant technical info. You can skip not quantitative or not relevant information
+- De-duplicate info across ALL fields.
+- For responsibilities/required_skills/optional_skills: max 6 bullets each; merge similar items into one bullet if needed.
+- company_details / project_details are high-level context about company/project (not the role). If absent, set None. 
+If well-known company facts are relevant AND not contradicting the JD, you may add 1 short sentence to company_details.
+- If a value is not stated in the JD, use None (booleans must be True/False/None).
+- requirements lists must always exist (use [] if nothing found).
+
+Now convert the user's JD."""
+
 
 jd_dict2poetry = """You are the admin of a Telegram channel that posts IT job opportunities:
 Your client will send you dictionary with job opening information

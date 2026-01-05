@@ -10,3 +10,4 @@ SUPABASE_KEY = os.getenv("SUPABASE_ROLE_KEY")
 SUPABASE_BUCKET = "telegram-images"
 FACES_BUCKET = "faces"
 USER_ID = 212657982
+HR_ASSISTANT_MODEL = os.getenv("HR_ASSISTANT_MODEL", "gpt-4o-mini")
