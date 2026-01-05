@@ -57,18 +57,17 @@ Schema (no extra keys):
 }
 
 Rules:
-- Output must be in English.
+- Output must be valid json: double quotes only, true/false/null, no code fences or extra text.
+- If data is missing, use null (or an empty list for list fields).
 - Keep the whole output under 1200 characters by making strings short.
 - Remove marketing/fluff; keep only applicant-relevant technical info. You can skip not quantitative or not relevant information
 - De-duplicate info across ALL fields.
 - For responsibilities/required_skills/optional_skills: max 6 bullets each; merge similar items into one bullet if needed.
 - company_details / project_details are high-level context about company/project (not the role). If absent, set None. 
 If well-known company facts are relevant AND not contradicting the JD, you may add 1 short sentence to company_details.
-- If a value is not stated in the JD, use None (booleans must be True/False/None).
-- requirements lists must always exist (use [] if nothing found).
+- requirements lists must always be present (use [] when empty).
 
 Now convert the user's JD."""
-
 
 jd_dict2poetry = """You are the admin of a Telegram channel that posts IT job opportunities:
 Your client will send you dictionary with job opening information
