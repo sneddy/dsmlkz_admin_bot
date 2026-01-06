@@ -56,13 +56,13 @@ async def handle_jd(message: types.Message):
 
     if job_type == "ml":
         drawer = JobDrawer(
-            img_path="assets/images/ml_job_template.jpeg",
+            img_path="assets/images/ml_jobs_background_new.png",
             font_path="assets/fonts/PressStart2P-Regular.ttf",
             description_font_path="assets/fonts/NotoSans-Regular.ttf",
         )
     else:
         drawer = JobDrawer(
-            img_path="assets/images/it_job_template.jpeg",
+            img_path="assets/images/it_jobs_background_new.png",
             font_path="assets/fonts/PressStart2P-Regular.ttf",
             description_font_path="assets/fonts/NotoSans-Regular.ttf",
         )
