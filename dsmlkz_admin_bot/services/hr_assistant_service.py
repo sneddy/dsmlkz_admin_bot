@@ -50,6 +50,12 @@ class ChatGptHrAssistant:
             reraise=True,
         ):
             with attempt:
+                logging.info(
+                    "[HR Assistant] Sending prompt to OpenAI: model=%s attempt=%s text_len=%s",
+                    self.model,
+                    attempt.retry_state.attempt_number + 1,
+                    len(user_jd),
+                )
                 messages = [
                     {"role": "system", "content": jd2dict_prompt},
                     {"role": "user", "content": user_jd},
@@ -62,6 +68,12 @@ class ChatGptHrAssistant:
                     response_format={"type": "json_object"},
                 )
                 content = completion.choices[0].message.content or "{}"
+                logging.info(
+                    "[HR Assistant] Received response: id=%s prompt_tokens=%s completion_tokens=%s",
+                    completion.id,
+                    getattr(completion.usage, "prompt_tokens", None),
+                    getattr(completion.usage, "completion_tokens", None),
+                )
                 return self._parse_completion(content)
 
     @classmethod

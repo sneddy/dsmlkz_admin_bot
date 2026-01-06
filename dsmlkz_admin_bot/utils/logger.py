@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -7,6 +8,8 @@ from pathlib import Path
 def setup_logging():
     LOG_DIR = Path(__file__).parent.parent.parent / "logs"
     LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+    level = os.getenv("LOG_LEVEL", "INFO").upper()
 
     log_formatter = logging.Formatter(
         "[%(asctime)s] %(levelname)s [%(name)s]: %(message)s",
@@ -21,4 +24,11 @@ def setup_logging():
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setFormatter(log_formatter)
 
-    logging.basicConfig(level=logging.INFO, handlers=[file_handler, stdout_handler])
+    # force=True makes sure Uvicorn/Aiogram reuse our handlers/level.
+    logging.basicConfig(
+        level=level, handlers=[file_handler, stdout_handler], force=True
+    )
+
+    # Align common libraries with our log level for consistent output.
+    for noisy_logger in ("uvicorn", "uvicorn.error", "uvicorn.access", "aiogram"):
+        logging.getLogger(noisy_logger).setLevel(level)

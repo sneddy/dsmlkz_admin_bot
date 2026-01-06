@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 
@@ -8,6 +9,7 @@ from dsmlkz_admin_bot.services.hr_assistant_service import ChatGptHrAssistant
 from dsmlkz_admin_bot.services.jd_drawing_service import JobDrawer
 
 user_states = {}
+log = logging.getLogger(__name__)
 
 
 def get_job_type_keyboard():
@@ -23,12 +25,14 @@ def get_job_type_keyboard():
 
 
 async def start_new_jd(message: types.Message):
+    log.info("Received /new_jd command: user=%s chat=%s", message.from_user.id, message.chat.id)
     await message.reply("Выберите тип вакансии:", reply_markup=get_job_type_keyboard())
 
 
 async def job_type_callback(call: types.CallbackQuery):
     job_type = call.data.split(":")[1]
     user_states[call.from_user.id] = {"state": "awaiting_jd", "job_type": job_type}
+    log.info("Job type selected: user=%s job_type=%s", call.from_user.id, job_type)
     await call.message.edit_reply_markup()
     await call.message.answer("Теперь пришлите описание вакансии.")
 
@@ -43,6 +47,12 @@ async def handle_jd(message: types.Message):
         return
 
     job_type = user_state.get("job_type", "it")
+    log.info(
+        "JD text received: user=%s type=%s text_len=%s",
+        message.from_user.id,
+        job_type,
+        len(message.text),
+    )
 
     if job_type == "ml":
         drawer = JobDrawer(
@@ -63,6 +73,7 @@ async def handle_jd(message: types.Message):
 
     try:
         meta_info = assistant.text2dict(message.text)
+        log.info("OpenAI meta generated: keys=%s", list(meta_info.keys()))
 
         drawer.reset()
         img = drawer.draw(meta_info)
@@ -71,6 +82,7 @@ async def handle_jd(message: types.Message):
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
             temp_img_path = tmp.name
             img.save(temp_img_path)
+            log.info("Temporary JD image created at %s", temp_img_path)
 
         try:
             with open(temp_img_path, "rb") as photo_file:
@@ -82,6 +94,7 @@ async def handle_jd(message: types.Message):
         await message.reply(markdown_text, parse_mode="MarkdownV2")
 
     except Exception as e:
+        log.exception("Error during JD generation: user=%s", message.from_user.id)
         await message.reply(f"Произошла ошибка при генерации: {e}")
     finally:
         user_states.pop(message.from_user.id, None)

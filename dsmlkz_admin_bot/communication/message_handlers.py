@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import Bot, Dispatcher, types
 
 from dsmlkz_admin_bot.communication.message_processor import MessageProcessor
@@ -7,6 +9,8 @@ from dsmlkz_admin_bot.keyboards import (get_action_keyboard,
 
 # Temporary in-memory storage
 user_message_storage = {}
+
+log = logging.getLogger(__name__)
 
 
 async def clean_up_messages(bot: Bot, user_id: int, message_ids: list):
@@ -43,6 +47,13 @@ def register_message_handlers(dp: Dispatcher, bot: Bot):
             "processor": processor,
             "message": message,
         }
+        log.info(
+            "Forwarded message received: user=%s channel=%s message_id=%s media_group=%s",
+            message.from_user.id,
+            getattr(message.forward_from_chat, "id", None),
+            message.message_id,
+            message.media_group_id,
+        )
 
         control_message = await message.reply(
             "What do you want to do with this message?",
@@ -80,6 +91,12 @@ def register_message_handlers(dp: Dispatcher, bot: Bot):
 
         # 🧹 Cleanup on cancel/decline
         if callback_query.data in ["cancel_action", "cancel_save", "decline_save"]:
+            log.info(
+                "User cancelled flow: user=%s message_id=%s action=%s",
+                user_id,
+                getattr(message, "message_id", None),
+                callback_query.data,
+            )
             await clean_up_messages(
                 bot,
                 user_id,
@@ -96,6 +113,12 @@ def register_message_handlers(dp: Dispatcher, bot: Bot):
         # ✅ Parse job/news
         if callback_query.data in ["parse_job", "parse_news"]:
             message_type = "job" if callback_query.data == "parse_job" else "news"
+            log.info(
+                "Parsing request: user=%s message_id=%s type=%s",
+                user_id,
+                getattr(message, "message_id", None),
+                message_type,
+            )
             parsed_message = (
                 await processor.parse_job()
                 if message_type == "job"
@@ -127,6 +150,12 @@ def register_message_handlers(dp: Dispatcher, bot: Bot):
                 await processor.save_parsed_message(parsed_message)
                 await callback_query.answer(
                     "✅ Successfully saved to DB!", show_alert=True
+                )
+                log.info(
+                    "Saved parsed message: user=%s channel=%s message_id=%s",
+                    user_id,
+                    parsed_message.meta_information.get("channel_name"),
+                    parsed_message.meta_information.get("message_id"),
                 )
 
             await clean_up_messages(

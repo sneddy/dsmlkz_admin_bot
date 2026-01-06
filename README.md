@@ -42,6 +42,7 @@ Set via environment (see `.env` for local):
 6) Open Telegram, forward a channel post to the bot and choose an action; or run `/new_jd` and send a JD text.
 
 ## Webhook troubleshooting / manual set
+- On Railway, the app will now auto-derive `WEBHOOK_URL` from `RAILWAY_STATIC_URL` or `RAILWAY_PUBLIC_DOMAIN`; you can still override with an explicit `WEBHOOK_URL` env var if you want a custom domain.
 - Check current webhook:  
   `curl "https://api.telegram.org/bot${BOT_TOKEN}/getWebhookInfo"`
 - Set webhook using your current `.env` values (loads `.env`, then calls Telegram):  
@@ -66,6 +67,9 @@ Set via environment (see `.env` for local):
   ```
 - Stop webhook (switch to polling or redeploy):  
   `curl "https://api.telegram.org/bot${BOT_TOKEN}/deleteWebhook"`
+
+## Logging
+- Logs stream to stdout (Railway) and `logs/bot.log`. Override level with `LOG_LEVEL` (default `INFO`).
 
 ## File tree (trimmed)
 ```
